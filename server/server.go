@@ -49,9 +49,9 @@ func (e EventServer) PostEvent(stream event.EventService_PostEventServer) error 
 
 		mutex.RLock()
 		schema = inMemoryStore[key]
+		mutex.RUnlock()
 		codec := schema.Codec()
 		bytes, err := event.EventMeta.MarshalJSON()
-		mutex.RUnlock()
 
 		if err != nil {
 			return err
@@ -85,9 +85,9 @@ func (e EventServer) PostEventBatch(ctx context.Context, payload *event.EventReq
 
 		mutex.RLock()
 		schema = inMemoryStore[key]
+		mutex.RUnlock()
 		codec := schema.Codec()
 		bytes, err := event.EventMeta.MarshalJSON()
-		mutex.RUnlock()
 
 		if err != nil {
 			return nil, err
