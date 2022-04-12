@@ -1,15 +1,14 @@
 package main
 
 import (
-	"encoding/json"
 	"flag"
-	"fmt"
-	"io/ioutil"
 	"log"
-	"net/http"
-	"time"
+	"net"
 
-	"github.com/linkedin/goavro/v2"
+	"github.com/BRO3886/go-avro-validation/pkg/event"
+	"github.com/BRO3886/go-avro-validation/server"
+	"github.com/riferrei/srclient"
+	"google.golang.org/grpc"
 )
 
 var (
@@ -25,67 +24,19 @@ type RegisteredSchema struct {
 
 func main() {
 	flag.Parse()
+	client := srclient.CreateSchemaRegistryClient(*schemaRegistryUrl)
 
-	// get the schema for the subject
-	regSchema, err := getSchema("test", "2")
+	lis, err := net.Listen("tcp", ":9000")
 	if err != nil {
-		panic(err)
+		log.Fatalf("failed to listen: %v", err)
 	}
 
-	fmt.Println(regSchema.Schema)
+	srv := grpc.NewServer()
 
-	codec, err := goavro.NewCodec(regSchema.Schema)
-	if err != nil {
-		fmt.Println(err)
-	}
+	event.RegisterEventServiceServer(srv, server.EventServer{
+		SchemaregClient: client,
+	})
 
-	// the json to be validated
-	jsonStr := `{"field1":"sks", "field2":123, "field4":"3456"}`
-	decoded, _, err := codec.NativeFromTextual([]byte(jsonStr))
-	if err != nil {
-		log.Fatalf("error: %v", err)
-	}
-	log.Println("Decoded:", decoded)
-
-}
-
-func getSchema(subject string, version string) (*RegisteredSchema, error) {
-	// make an http POST call to http://localhost:8081/subjects/test in golang
-	// to get the schema for the subject
-
-	url := fmt.Sprintf("%s/subjects/%s/versions/%s", *schemaRegistryUrl, subject, version)
-	client := http.Client{
-		Timeout: 10 * time.Second,
-	}
-
-	req, err := http.NewRequest(http.MethodGet, url, nil)
-	if err != nil {
-		fmt.Println(err)
-		return nil, err
-	}
-
-	req.Header.Add("Accept", "application/vnd.schemaregistry.v1+json")
-
-	res, err := client.Do(req)
-	if err != nil {
-		fmt.Println(err)
-		return nil, err
-	}
-
-	defer res.Body.Close()
-
-	regSchema := new(RegisteredSchema)
-
-	body, err := ioutil.ReadAll(res.Body)
-	if err != nil {
-		fmt.Println(err)
-		return nil, err
-	}
-
-	err = json.Unmarshal(body, regSchema)
-	if err != nil {
-		return nil, err
-	}
-
-	return regSchema, nil
+	log.Println("Starting server on port 9000")
+	log.Panic(srv.Serve(lis))
 }

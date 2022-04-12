@@ -1,0 +1,8 @@
+{
+    "proto": "../proto/event.proto",
+    "call": "proto.EventService.PostEvent",
+    "total": 50000,
+    "host": "localhost:9000",
+    "insecure": true,
+    "concurrency": 5000
+}

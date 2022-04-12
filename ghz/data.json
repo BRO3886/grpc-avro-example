@@ -1,0 +1,16 @@
+[
+    {
+        "eventName": "",
+        "entityId": "",
+        "source": "",
+        "tags": {
+            "tag1": "",
+            "tag2": "",
+            "tag3": ""
+        },
+        "eventMeta": {},
+        "userAccountId": "",
+        "timestamp": 1649686702,
+        "schemaVersion": 2
+    }
+]

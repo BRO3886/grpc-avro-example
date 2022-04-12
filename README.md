@@ -1,8 +1,26 @@
-# Go - Avro schema registry
+# Go, gRPC - Avro schema registry
 
-Basic app which makes an HTTP call to a schema registry, returns the schema for a given subject and version, and validates it against a hard-coded json data.
+This app is a POC for using gRPC to send events in batches or by using gRPC streaming, and validating some metadata using schema from Schema registry, where the data is stored in avro format.
 
-The docker-compose file will be used to run the schema registry and its required dependencies. Then run
+I used a tool called `ghz` to test both the streaming and batching performance.
+
+
+Use the docker-compose file run the schema registry and its required dependencies. 
 ```bash
-go run main.go
+$ docker-compose up
+```
+
+Then run
+```bash
+$ go run main.go
+```
+
+Proto gen:
+```bash
+$ protoc --go_out=. --go-grpc_out=. ./proto/event.proto
+```
+
+Ghz commands
+```bash
+$ ghz --config=config.json -d "$(cat data.json)"
 ```

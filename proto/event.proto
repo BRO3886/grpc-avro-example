@@ -1,0 +1,32 @@
+
+syntax="proto3";
+package proto;
+
+import "google/protobuf/struct.proto";
+import "google/protobuf/empty.proto";
+
+option go_package = "pkg/event";
+
+message Event {
+    string eventName = 1;
+    string entityId  = 2;
+    string source  = 3;
+    map<string,string> tags = 4;
+    google.protobuf.Struct eventMeta = 5;
+    string userAccountId = 6;
+    int64 timestamp = 7;
+    uint32 schemaVersion = 8;
+}
+
+message EventRequest {
+    repeated Event events = 1;
+}
+
+message EventResponse {
+    string message = 1;
+}
+
+service EventService {
+    rpc PostEvent(stream Event) returns (google.protobuf.Empty);
+    rpc PostEventBatch(EventRequest) returns (EventResponse);
+}
